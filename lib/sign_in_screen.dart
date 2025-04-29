@@ -1,14 +1,15 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_authentication/signup_screen.dart';
 import 'package:flutter/material.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
 
   @override
-  State<SignInScreen> createState() => _LoginScreenState();
+  State<SignInScreen> createState() => _SignInScreenState();
 }
 
-class _LoginScreenState extends State<SignInScreen> {
+class _SignInScreenState extends State<SignInScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -19,13 +20,14 @@ class _LoginScreenState extends State<SignInScreen> {
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
       );
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Login Successful')),
+        const SnackBar(content: Text('Login Successful')),
       );
+      // No need for Navigator, StreamBuilder will detect auth change
     } catch (e) {
-      print(e);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Login Failed')),
+        const SnackBar(content: Text('Login Failed')),
       );
     }
   }
@@ -33,9 +35,7 @@ class _LoginScreenState extends State<SignInScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Firebase Login'),
-      ),
+      appBar: AppBar(title: const Text('Sign In')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -56,11 +56,19 @@ class _LoginScreenState extends State<SignInScreen> {
               onPressed: signIn,
               child: const Text('Sign In'),
             ),
+            const SizedBox(height: 12),
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SignUpScreen()),
+                );
+              },
+              child: const Text('Dont have an account? Sign Up'),
+            ),
           ],
         ),
       ),
     );
   }
 }
-
-
