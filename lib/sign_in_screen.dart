@@ -14,7 +14,13 @@ class _SignInScreenState extends State<SignInScreen> {
   final TextEditingController passwordController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  bool isLoading = false; // <-- loading state
+
   Future<void> signIn() async {
+    setState(() {
+      isLoading = true; // loading শুরু
+    });
+
     try {
       await _auth.signInWithEmailAndPassword(
         email: emailController.text.trim(),
@@ -24,11 +30,14 @@ class _SignInScreenState extends State<SignInScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Login Successful')),
       );
-      // No need for Navigator, StreamBuilder will detect auth change
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Login Failed')),
       );
+    } finally {
+      setState(() {
+        isLoading = false; // loading শেষ
+      });
     }
   }
 
@@ -53,8 +62,20 @@ class _SignInScreenState extends State<SignInScreen> {
             ),
             const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: signIn,
-              child: const Text('Sign In'),
+              onPressed: isLoading ? null : signIn, // যখন লোডিং হবে তখন disable
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 50), // button বড় হবে
+              ),
+              child: isLoading
+                  ? const SizedBox(
+                height: 24,
+                width: 24,
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2,
+                ),
+              )
+                  : const Text('Sign In'),
             ),
             const SizedBox(height: 12),
             TextButton(
@@ -64,7 +85,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   MaterialPageRoute(builder: (context) => const SignUpScreen()),
                 );
               },
-              child: const Text('Dont have an account? Sign Up'),
+              child: const Text('Don\'t have an account? Sign Up'),
             ),
           ],
         ),

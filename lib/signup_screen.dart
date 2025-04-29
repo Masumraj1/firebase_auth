@@ -1,5 +1,5 @@
-
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_authentication/home_screen.dart';  // HomeScreen ইমপোর্ট করুন
 import 'package:firebase_authentication/sign_in_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -15,22 +15,38 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController passwordController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  bool isLoading = false;  // <-- loading state
+
   Future<void> signUp() async {
+    setState(() {
+      isLoading = true;  // loading শুরু
+    });
+
     try {
+      // Firebase এর মাধ্যমে সাইন আপ করা
       await _auth.createUserWithEmailAndPassword(
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
       );
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Account Created Successfully')),
+        const SnackBar(content: Text('Account Created Successfully')),
       );
-      // After signup, navigate to another page or home
-      // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomeScreen()));
+
+      // সাইন আপ সফল হলে HomeScreen-এ নিয়ে যাবো
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const SignInScreen()),
+      );
     } catch (e) {
       print(e);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Sign Up Failed: ${e.toString()}')),
       );
+    } finally {
+      setState(() {
+        isLoading = false;  // loading শেষ
+      });
     }
   }
 
@@ -63,8 +79,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
             ),
             const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: signUp,
-              child: const Text('Sign Up'),
+              onPressed: isLoading ? null : signUp, // যখন লোডিং হবে, তখন বাটন নিষ্ক্রিয়
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 50), // button বড় হবে
+              ),
+              child: isLoading
+                  ? const SizedBox(
+                height: 24,
+                width: 24,
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2,
+                ),
+              )
+                  : const Text('Sign Up'),
             ),
             const SizedBox(height: 12),
             TextButton(
@@ -76,13 +104,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
               },
               child: const Text('Already have an account? Sign In'),
             ),
-
           ],
         ),
       ),
     );
   }
 }
-
-
-
